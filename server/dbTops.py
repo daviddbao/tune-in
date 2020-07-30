@@ -19,56 +19,71 @@ class Database():
         self.connection = self.engine.connect()
         print("Database Instance created")
 
-    def saveData(self, user):
+    def saveData(self, uri):
         session = Session(bind=self.connection)
-        session.add(user)
+        session.add(uri)
         session.commit()
+        print("track committed")
 
-    # def fetchUserByName(self):
-    #     meta = MetaData()
-    #     user = Table('user', meta,
-    #                     Column('spotify_uri'),
-    #                     Column('rank'),
-    #                     Column('user_id'))
-    #     data = self.connection.execute(user.select())
-    #     for user in data:
-    #         print(user)
+    def fetchUserByName(self, table_name):
+        meta = MetaData()
+        item = Table(table_name, meta,
+                        Column('spotify_uri'),
+                        Column('rank'),
+                        Column('user_id'))
+        data = self.connection.execute(item.select())
+        for d in data:
+            print(d)
 
-    # def fetchAllUsers(self):
-    #     # bind an individual Session to the connection
-    #     self.session = Session(bind=self.connection)
-    #     users = self.session.query(User).all()
-    #     for user in users:
-    #         print(user)
+    def fetchAllUsers(self, class_name):
+        # bind an individual Session to the connection
+        self.session = Session(bind=self.connection)
+        items = self.session.query(class_name).all()
+        for i in items:
+            print(i)
 
-    # def fetchByQuery(self, query):
-    #     fetchQuery = self.connection.execute(f"SELECT * FROM {query}")
-    #
-    #     for data in fetchQuery.fetchall():
-    #         print(data)
+    def fetchByQuery(self, query):
+        fetchQuery = self.connection.execute(f"SELECT * FROM {query}")
 
-    # def updateUser(self, userName, address):
+        for data in fetchQuery.fetchall():
+            print(data)
+
+    # def updateUser(self, userID, class_name, address):
     #     session = Session(bind=self.connection)
-    #     dataToUpdate = {User.address: address}
-    #     userData = session.query(User).filter(User.name==userName)
+    #     dataToUpdate = {class_name.address: address}
+    #     userData = session.query(class_name).filter(class_name.user_id==userID)
     #     userData.update(dataToUpdate)
     #     session.commit()
-    #
-    # def deleteUser(self, user):
-    #     session = Session(bind=self.connection)
-    #     userData = session.query(User).filter(User.name==user).first()
-    #     session.delete(userData)
-    #     session.commit()
+
+    def deleteArtistUser(self, userID):
+        session = Session(bind=self.connection)
+        i = session.query(Artist).filter(Artist.user_id==userID)
+        session.delete(i)
+        session.commit()
+
+    def deleteTrackUser(self, userID):
+        session = Session(bind=self.connection)
+        i  = session.query(Track).filter(Track.user_id==userID)
+        session.delete(i)
+        session.commit()
+
+    def userArtistExists(self, userID):
+        session = Session(bind=self.connection)
+        return len(session.query(Artist).filter(Artist.user_id==userID).all()) > 0
+
+    def userTrackExists(self, userID):
+        session = Session(bind=self.connection)
+        return len(session.query(Track).filter(Track.user_id==userID).all()) > 0
 
 Base = declarative_base()
 
 class Artist(Base):
     """Model for top artists table."""
     __tablename__ = 'artists'
+    id = Column(Integer, primary_key=True)
     spotify_uri = Column(String)
     rank = Column(Integer)
     user_id = Column(Integer)
-    id = Column(Integer, primary_key=True)
 
     def __repr__(self):
         return "<User(spotify_uri='%s', rank='%s', user_id='%s')>" % (self.spotify_uri, self.rank, self.user_id)
@@ -76,10 +91,10 @@ class Artist(Base):
 class Track(Base):
     """Model for top tracks table."""
     __tablename__ = 'tracks'
+    id = Column(Integer, primary_key=True)
     spotify_uri = Column(String)
     rank = Column(Integer)
     user_id = Column(Integer)
-    id = Column(Integer, primary_key=True)
 
     def __repr__(self):
         return "<User(spotify_uri='%s', rank='%s', user_id='%s')>" % (self.spotify_uri, self.rank, self.user_id)

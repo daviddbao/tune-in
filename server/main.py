@@ -17,12 +17,22 @@ def login_redirect():
 
     db = Database()
 
+    if db.userTrackExists(user_id):
+        print("exists woo")
+        db.deleteTrackUser(user_id)
+        print("delelelele")
+    print("loopy time")
     for i, item in enumerate(topTracks):
         uripapa = 'spotify:track:' + item['id']
         # if i < 2:
         #     s_tracks.append(uripapa)
-        db.saveData(Track(spotify_uri=uripapa, rank=i, user_id=user_id))
+        b = Track(spotify_uri=uripapa, rank=i, user_id=user_id)
+        db.saveData(b)
+        print("track added", uripapa)
+    print("done loopy")
 
+    if db.userArtistExists(user_id):
+        db.deleteArtistUser(user_id)
     for i, item in enumerate(topArtists):
         uripapa = 'spotify:artist:' + item['id']
         # if i < 3:
